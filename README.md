@@ -9,12 +9,12 @@ pip install -e .[dev]
 python -m pytest
 ```
 
-If `python` resolves to the Windows Store shim on this machine, use the virtual
-environment's interpreter directly for install and test commands:
+If `python` resolves to the Windows Store shim on this machine, create the
+virtual environment with any installed Python 3.11+ launcher, then keep the
+install and test commands inside `.venv`:
 
 ```powershell
-py -m venv .venv
-.venv\Scripts\activate
+py -3.11 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -e .[dev]
 .\.venv\Scripts\python.exe -m pytest
 ```
