@@ -270,6 +270,5 @@
 
 说明：
 
-- 该文档已按当前已确认需求写入本地
-- 当前目录不是 git 仓库，因此本轮无法执行设计文档提交
-- 设计文档路径：`C:\Users\李岩\Desktop\docs\superpowers\specs\2026-04-02-image-format-converter-design.md`
+- 该文档已迁移到独立项目仓库中维护
+- 设计文档路径：`C:\Users\李岩\Desktop\image-format-converter\docs\specs\2026-04-02-image-format-converter-design.md`
