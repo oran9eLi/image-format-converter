@@ -267,8 +267,3 @@
 - 先保证稳定和易用，再考虑高级功能
 
 ---
-
-说明：
-
-- 该文档已迁移到独立项目仓库中维护
-- 设计文档路径：`C:\Users\李岩\Desktop\image-format-converter\docs\specs\2026-04-02-image-format-converter-design.md`
