@@ -9,12 +9,12 @@ pip install -e .[dev]
 python -m pytest
 ```
 
-If `python` resolves to the Windows Store shim on this machine, use `py -3.14`
-for the same steps instead:
+If `python` resolves to the Windows Store shim on this machine, use the virtual
+environment's interpreter directly for install and test commands:
 
 ```powershell
-py -3.14 -m venv .venv
+py -m venv .venv
 .venv\Scripts\activate
-py -3.14 -m pip install -e .[dev]
-py -3.14 -m pytest
+.\.venv\Scripts\python.exe -m pip install -e .[dev]
+.\.venv\Scripts\python.exe -m pytest
 ```
