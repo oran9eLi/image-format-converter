@@ -12,6 +12,5 @@ dependencies = ["PySide6>=6.8", "Pillow>=11.0"]
 dev = ["pytest>=8.0", "pytest-qt>=4.4"]
 
 [tool.pytest.ini_options]
-addopts = "-p no:cacheprovider"
 pythonpath = ["src"]
 testpaths = ["tests"]
