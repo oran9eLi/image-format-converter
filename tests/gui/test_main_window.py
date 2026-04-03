@@ -39,6 +39,7 @@ def test_add_files_populates_queue(qtbot, tmp_path: Path):
     files = [tmp_path / "a.jpg", tmp_path / "b.png"]
     window.add_files(files)
 
+    assert window._queued_files == files
     assert window.file_table.rowCount() == 2
     assert window.file_table.item(0, 0).text() == str(files[0])
     assert window.file_table.item(0, 1).text() == "待处理"
