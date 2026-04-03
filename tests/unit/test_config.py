@@ -15,6 +15,14 @@ def test_save_and_reload_default_output_dir(tmp_path: Path):
     assert store.load().default_output_dir == Path("D:/PNG_Output")
 
 
+def test_changing_output_path_persists_new_default(tmp_path: Path):
+    store = AppConfigStore(tmp_path / "config.json")
+    store.save_default_output_dir(tmp_path / "initial")
+    store.save_default_output_dir(tmp_path / "next")
+
+    assert store.load().default_output_dir == tmp_path / "next"
+
+
 def test_default_config_path_points_to_image_format_converter_appdata_location():
     assert default_config_path() == (
         Path.home() / "AppData" / "Local" / "ImageFormatConverter" / "config.json"

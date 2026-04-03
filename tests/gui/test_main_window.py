@@ -1,5 +1,10 @@
 from pathlib import Path
+from shutil import rmtree
+from uuid import uuid4
 
+from PIL import Image
+
+from image_format_converter.config import AppConfigStore
 from image_format_converter.main_window import MainWindow
 
 
@@ -36,3 +41,26 @@ def test_change_output_path_updates_label(qtbot, tmp_path: Path):
     window.set_output_directory(newer)
 
     assert str(newer) in window.output_path_label.text()
+
+
+def test_convert_button_runs_batch_and_updates_status(qtbot):
+    root_path = Path.cwd() / f".gui-convert-{uuid4().hex}"
+    root_path.mkdir(parents=True, exist_ok=False)
+    try:
+        source = root_path / "sample.png"
+        with source.open("wb") as fp:
+            Image.new("RGB", (12, 12), "green").save(fp, format="PNG")
+
+        store = AppConfigStore(root_path / "config.json")
+        store.save_default_output_dir(root_path / "out")
+        window = MainWindow(default_output_dir=store.load().default_output_dir)
+        qtbot.addWidget(window)
+        window.add_files([source])
+
+        assert hasattr(window, "convert_current_batch")
+        window.convert_current_batch()
+
+        assert "成功 1 张" in window.status_label.text()
+        assert (root_path / "out" / "sample.png").exists()
+    finally:
+        rmtree(root_path, ignore_errors=True)

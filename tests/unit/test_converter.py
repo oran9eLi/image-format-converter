@@ -67,3 +67,15 @@ def test_corrupt_supported_file_does_not_stop_batch(tmp_path: Path):
     assert (tmp_path / "out" / "photo.png").exists()
     assert result.items[0].success is False
     assert result.items[1].success is True
+
+
+def test_invalid_file_does_not_block_valid_file(tmp_path: Path):
+    valid = tmp_path / "ok.png"
+    invalid = tmp_path / "bad.txt"
+    Image.new("RGB", (10, 10), "black").save(valid)
+    invalid.write_text("bad", encoding="utf-8")
+
+    result = ConversionService().convert_files([invalid, valid], tmp_path / "out", "PNG")
+
+    assert result.succeeded == 1
+    assert result.failed == 1
