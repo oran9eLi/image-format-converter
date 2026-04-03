@@ -25,7 +25,6 @@ class MainWindow(QWidget):
     def _build_layout(self) -> None:
         layout = QVBoxLayout(self)
         header = QHBoxLayout()
-        header.addWidget(QLabel("输出目录："))
         header.addWidget(self.output_path_label)
         header.addStretch(1)
         header.addWidget(QLabel("目标格式："))

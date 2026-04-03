@@ -12,3 +12,4 @@ dist/
 .superpowers/
 .worktrees/
 tests/unit/.pytest_runtime_tmp/
+.pytest-tmp/
