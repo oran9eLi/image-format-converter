@@ -28,6 +28,7 @@ class MainWindow(QWidget):
         self._config_store = config_store
         self._conversion_service = conversion_service or ConversionService()
         self._queued_files: list[Path] = []
+        self._queued_row_indices: list[int] = []
 
         self.output_path_label = QLabel(self._format_output_dir())
         self.format_combo = QComboBox()
@@ -70,6 +71,7 @@ class MainWindow(QWidget):
             self._queued_files.append(file_path)
             row = self.file_table.rowCount()
             self.file_table.insertRow(row)
+            self._queued_row_indices.append(row)
             self.file_table.setItem(row, 0, QTableWidgetItem(str(file_path)))
             self.file_table.setItem(row, 1, QTableWidgetItem("待处理"))
             self.file_table.setItem(row, 2, QTableWidgetItem(self.format_combo.currentText()))
@@ -79,15 +81,19 @@ class MainWindow(QWidget):
             self.status_label.setText("请先设置输出目录")
             return
 
+        current_format = self.format_combo.currentText()
         result = self._conversion_service.convert_files(
             self._queued_files,
             self._output_dir,
-            self.format_combo.currentText(),
+            current_format,
         )
-        for row, item in enumerate(result.items):
+        for row, item in zip(self._queued_row_indices, result.items):
             self.file_table.setItem(
                 row,
                 1,
                 QTableWidgetItem("成功" if item.success else "失败"),
             )
+            self.file_table.setItem(row, 2, QTableWidgetItem(current_format))
+        self._queued_files.clear()
+        self._queued_row_indices.clear()
         self.status_label.setText(f"成功 {result.succeeded} 张，失败 {result.failed} 张")

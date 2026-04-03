@@ -64,3 +64,28 @@ def test_convert_button_runs_batch_and_updates_status(qtbot):
         assert (root_path / "out" / "sample.png").exists()
     finally:
         rmtree(root_path, ignore_errors=True)
+
+
+def test_convert_current_batch_updates_format_column_and_clears_queue(qtbot):
+    root_path = Path.cwd() / f".gui-convert-{uuid4().hex}"
+    root_path.mkdir(parents=True, exist_ok=False)
+    try:
+        source = root_path / "sample.png"
+        with source.open("wb") as fp:
+            Image.new("RGB", (12, 12), "green").save(fp, format="PNG")
+
+        store = AppConfigStore(root_path / "config.json")
+        store.save_default_output_dir(root_path / "out")
+        window = MainWindow(default_output_dir=store.load().default_output_dir)
+        qtbot.addWidget(window)
+        window.add_files([source])
+        window.format_combo.setCurrentText("JPG")
+
+        window.convert_current_batch()
+        window.convert_current_batch()
+
+        assert window.file_table.item(0, 2).text() == "JPG"
+        assert window.status_label.text() == "成功 0 张，失败 0 张"
+        assert len(list((root_path / "out").glob("sample*.jpg"))) == 1
+    finally:
+        rmtree(root_path, ignore_errors=True)

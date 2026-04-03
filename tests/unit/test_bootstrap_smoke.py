@@ -16,10 +16,21 @@ def test_main_bootstraps_window_with_saved_default_output_dir(monkeypatch, tmp_p
     AppConfigStore(config_path).save_default_output_dir(expected_output_dir)
 
     captured: dict[str, object] = {}
+    created_stores: list[object] = []
 
     class DummyApp:
         def exec(self) -> int:
             return 0
+
+    class DummyStore:
+        def __init__(self, path: Path) -> None:
+            self.path = path
+            created_stores.append(self)
+
+        def load(self):
+            from image_format_converter.config import AppConfig
+
+            return AppConfig(default_output_dir=expected_output_dir)
 
     class DummyWindow:
         def __init__(self, default_output_dir, config_store=None):
@@ -31,8 +42,10 @@ def test_main_bootstraps_window_with_saved_default_output_dir(monkeypatch, tmp_p
 
     monkeypatch.setattr(app_module, "build_app", lambda argv: DummyApp())
     monkeypatch.setattr(app_module, "default_config_path", lambda: config_path)
+    monkeypatch.setattr(app_module, "AppConfigStore", DummyStore)
     monkeypatch.setattr(app_module, "MainWindow", DummyWindow)
 
     assert app_module.main() == 0
     assert captured["default_output_dir"] == expected_output_dir
+    assert captured["config_store"] is created_stores[0]
     assert captured["shown"] is True

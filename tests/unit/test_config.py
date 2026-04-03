@@ -23,6 +23,13 @@ def test_changing_output_path_persists_new_default(tmp_path: Path):
     assert store.load().default_output_dir == tmp_path / "next"
 
 
+def test_load_treats_malformed_config_as_missing(tmp_path: Path):
+    config_path = tmp_path / "config.json"
+    config_path.write_text("{not valid json", encoding="utf-8")
+
+    assert AppConfigStore(config_path).load().default_output_dir is None
+
+
 def test_default_config_path_points_to_image_format_converter_appdata_location():
     assert default_config_path() == (
         Path.home() / "AppData" / "Local" / "ImageFormatConverter" / "config.json"

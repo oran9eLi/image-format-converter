@@ -16,8 +16,12 @@ class AppConfigStore:
         if not self._config_path.exists():
             return AppConfig(default_output_dir=None)
 
-        data = json.loads(self._config_path.read_text(encoding="utf-8"))
-        raw_path = data.get("default_output_dir")
+        try:
+            data = json.loads(self._config_path.read_text(encoding="utf-8"))
+            raw_path = data.get("default_output_dir")
+        except (OSError, AttributeError, TypeError, ValueError, json.JSONDecodeError):
+            return AppConfig(default_output_dir=None)
+
         return AppConfig(default_output_dir=Path(raw_path) if raw_path else None)
 
     def save_default_output_dir(self, output_dir: Path) -> None:
