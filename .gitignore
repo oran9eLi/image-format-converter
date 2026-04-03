@@ -8,12 +8,7 @@ venv/
 build/
 dist/
 *.spec
-.pytest_cache/
-.tmp/
-.pytest_tmp_local/
-.pytest_runtime_tmp/
 .mypy_cache/
 .superpowers/
 .worktrees/
-pytest-cache-files-*/
-.pytest_tmp_converter/
+tests/unit/.pytest_runtime_tmp/
