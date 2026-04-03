@@ -42,6 +42,22 @@ def test_existing_output_name_gets_incremented(tmp_path: Path):
     assert (output_dir / "photo (1).png").exists()
 
 
+def test_custom_output_name_is_used_for_converted_file(tmp_path: Path):
+    source = tmp_path / "photo.png"
+    Image.new("RGB", (8, 8), "blue").save(source)
+
+    service = ConversionService()
+    result = service.convert_files(
+        [source],
+        tmp_path / "out",
+        "PNG",
+        output_stems=["封面图"],
+    )
+
+    assert result.succeeded == 1
+    assert (tmp_path / "out" / "封面图.png").exists()
+
+
 def test_unsupported_file_is_reported_without_stopping_batch(tmp_path: Path):
     source = tmp_path / "notes.txt"
     source.write_text("not an image", encoding="utf-8")
@@ -51,6 +67,27 @@ def test_unsupported_file_is_reported_without_stopping_batch(tmp_path: Path):
 
     assert result.failed == 1
     assert "not a supported image format" in result.items[0].message.lower()
+
+
+def test_invalid_output_name_is_reported_without_stopping_batch(tmp_path: Path):
+    bad = tmp_path / "bad.png"
+    good = tmp_path / "good.png"
+    Image.new("RGB", (8, 8), "red").save(bad)
+    Image.new("RGB", (8, 8), "blue").save(good)
+
+    service = ConversionService()
+    result = service.convert_files(
+        [bad, good],
+        tmp_path / "out",
+        "PNG",
+        output_stems=["   ", "可用名字"],
+    )
+
+    assert result.failed == 1
+    assert result.succeeded == 1
+    assert result.items[0].success is False
+    assert "文件名无效" in result.items[0].message
+    assert (tmp_path / "out" / "可用名字.png").exists()
 
 
 def test_corrupt_supported_file_does_not_stop_batch(tmp_path: Path):

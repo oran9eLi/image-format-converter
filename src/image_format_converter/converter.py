@@ -13,20 +13,37 @@ FORMAT_SUFFIX = {
     "WEBP": ".webp",
     "ICO": ".ico",
 }
+INVALID_FILENAME_CHARS = set('<>:"/\\|?*')
 
 
 class ConversionService:
     def convert_files(
-        self, sources: list[Path], output_dir: Path, target_format: str
+        self,
+        sources: list[Path],
+        output_dir: Path,
+        target_format: str,
+        output_stems: list[str] | None = None,
     ) -> ConversionBatchResult:
         output_dir.mkdir(parents=True, exist_ok=True)
         results = [
-            self._convert_one(path, output_dir, target_format) for path in sources
+            self._convert_one(
+                path,
+                output_dir,
+                target_format,
+                output_stem=(
+                    output_stems[index] if output_stems is not None else path.stem
+                ),
+            )
+            for index, path in enumerate(sources)
         ]
         return ConversionBatchResult.from_file_results(results)
 
     def _convert_one(
-        self, source: Path, output_dir: Path, target_format: str
+        self,
+        source: Path,
+        output_dir: Path,
+        target_format: str,
+        output_stem: str,
     ) -> ConversionItemResult:
         if source.suffix.lower() not in SUPPORTED_INPUT_SUFFIXES:
             return ConversionItemResult(
@@ -46,8 +63,17 @@ class ConversionService:
                 message=f"Unsupported target format: {target_format}",
             )
 
+        normalized_stem = self._normalize_output_stem(output_stem)
+        if normalized_stem is None:
+            return ConversionItemResult(
+                source=source,
+                output=None,
+                success=False,
+                message="文件名无效",
+            )
+
         output_path = self._next_available_output_path(
-            output_dir / f"{source.stem}{suffix}"
+            output_dir / f"{normalized_stem}{suffix}"
         )
 
         try:
@@ -100,3 +126,11 @@ class ConversionService:
         if image.mode not in {"RGB", "RGBA"}:
             return image.convert("RGBA" if target_format == "PNG" else "RGB")
         return image
+
+    def _normalize_output_stem(self, output_stem: str) -> str | None:
+        candidate = output_stem.strip()
+        if not candidate or candidate in {".", ".."}:
+            return None
+        if any(char in INVALID_FILENAME_CHARS for char in candidate):
+            return None
+        return candidate
