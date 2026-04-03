@@ -36,9 +36,16 @@ def test_add_files_populates_queue(qtbot, tmp_path: Path):
     window = MainWindow(default_output_dir=tmp_path)
     qtbot.addWidget(window)
 
-    window.add_files([tmp_path / "a.jpg", tmp_path / "b.png"])
+    files = [tmp_path / "a.jpg", tmp_path / "b.png"]
+    window.add_files(files)
 
     assert window.file_table.rowCount() == 2
+    assert window.file_table.item(0, 0).text() == str(files[0])
+    assert window.file_table.item(0, 1).text() == "待处理"
+    assert window.file_table.item(0, 2).text() == "PNG"
+    assert window.file_table.item(1, 0).text() == str(files[1])
+    assert window.file_table.item(1, 1).text() == "待处理"
+    assert window.file_table.item(1, 2).text() == "PNG"
 
 
 def test_change_output_path_updates_label(qtbot, tmp_path: Path):

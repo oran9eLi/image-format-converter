@@ -7,6 +7,10 @@ from PySide6.QtWidgets import QFrame
 class DropZone(QFrame):
     files_dropped = Signal(list)
 
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setAcceptDrops(True)
+
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
             event.acceptProposedAction()
