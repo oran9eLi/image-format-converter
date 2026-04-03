@@ -16,6 +16,19 @@ def test_png_to_jpg_flattens_transparency(tmp_path: Path):
     assert (tmp_path / "out" / "transparent.jpg").exists()
 
 
+def test_transparent_gif_to_jpg_is_flattened_to_white(tmp_path: Path):
+    source = tmp_path / "transparent.gif"
+    image = Image.new("RGBA", (8, 8), (255, 0, 0, 0))
+    image.save(source, format="GIF", transparency=0)
+
+    service = ConversionService()
+    result = service.convert_files([source], tmp_path / "out", "JPG")
+
+    output = Image.open(tmp_path / "out" / "transparent.jpg")
+    assert result.succeeded == 1
+    assert output.getpixel((0, 0)) == (255, 255, 255)
+
+
 def test_existing_output_name_gets_incremented(tmp_path: Path):
     source = tmp_path / "photo.png"
     Image.new("RGB", (8, 8), "blue").save(source)
@@ -38,3 +51,19 @@ def test_unsupported_file_is_reported_without_stopping_batch(tmp_path: Path):
 
     assert result.failed == 1
     assert "not a supported image format" in result.items[0].message.lower()
+
+
+def test_corrupt_supported_file_does_not_stop_batch(tmp_path: Path):
+    broken = tmp_path / "broken.png"
+    broken.write_bytes(b"not a valid image")
+    good = tmp_path / "photo.png"
+    Image.new("RGB", (8, 8), "blue").save(good)
+
+    service = ConversionService()
+    result = service.convert_files([broken, good], tmp_path / "out", "PNG")
+
+    assert result.failed == 1
+    assert result.succeeded == 1
+    assert (tmp_path / "out" / "photo.png").exists()
+    assert result.items[0].success is False
+    assert result.items[1].success is True

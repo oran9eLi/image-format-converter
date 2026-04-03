@@ -50,14 +50,20 @@ class ConversionService:
             output_dir / f"{source.stem}{suffix}"
         )
 
-        with Image.open(source) as image:
-            prepared = self._prepare_image_for_target(image, target_format)
-            save_kwargs = {}
-            if target_format == "JPG":
-                save_kwargs["format"] = "JPEG"
-            else:
-                save_kwargs["format"] = target_format
-            prepared.save(output_path, **save_kwargs)
+        try:
+            with Image.open(source) as image:
+                prepared = self._prepare_image_for_target(image, target_format)
+                save_kwargs = {"format": "JPEG"} if target_format == "JPG" else {
+                    "format": target_format
+                }
+                prepared.save(output_path, **save_kwargs)
+        except Exception as exc:
+            return ConversionItemResult(
+                source=source,
+                output=None,
+                success=False,
+                message=str(exc),
+            )
 
         return ConversionItemResult(
             source=source,
@@ -82,10 +88,15 @@ class ConversionService:
     def _prepare_image_for_target(
         self, image: Image.Image, target_format: str
     ) -> Image.Image:
-        if target_format == "JPG" and image.mode in {"RGBA", "LA"}:
-            background = Image.new("RGB", image.size, "white")
-            background.paste(image, mask=image.getchannel("A"))
-            return background
+        if target_format == "JPG":
+            if image.mode in {"RGBA", "LA"} or image.info.get("transparency") is not None:
+                rgba = image.convert("RGBA")
+                background = Image.new("RGB", image.size, "white")
+                background.paste(rgba, mask=rgba.getchannel("A"))
+                return background
+            if image.mode != "RGB":
+                return image.convert("RGB")
+            return image
         if image.mode not in {"RGB", "RGBA"}:
             return image.convert("RGBA" if target_format == "PNG" else "RGB")
         return image

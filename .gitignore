@@ -11,6 +11,7 @@ dist/
 .pytest_cache/
 .tmp/
 .pytest_tmp_local/
+.pytest_runtime_tmp/
 .mypy_cache/
 .superpowers/
 .worktrees/
